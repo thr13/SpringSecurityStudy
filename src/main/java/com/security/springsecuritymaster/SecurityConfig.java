@@ -18,7 +18,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
-                .formLogin(form -> form
+                /*.formLogin(form -> form
                         .loginPage("/loginPage") // 로그인 페이지 URL
                         .loginProcessingUrl("/loginProc") // 아이디, 비밀번호 검증 (로그인 요청 시점, 인증 전) URL
                         .defaultSuccessUrl("/", true) // 로그인 성공 후 사용자가 이동할 URL, alwaysUse 값이 true 일 경우 로그인 성공시 무조건 defaultSuccessUrl 이 설정한 URL 로 이동하게 된다 (false 일 경우, 인증에 성공시 이전 위치로 redirect 된다)
@@ -34,6 +34,8 @@ public class SecurityConfig {
                             response.sendRedirect("/login"); // 인증 실패시 이동할 URL
                         })
                         .permitAll()
+                 */
+                .httpBasic(basic -> basic.authenticationEntryPoint(new CustomAuthenticationEntryPoint())
                 );
         return http.build();
     }
