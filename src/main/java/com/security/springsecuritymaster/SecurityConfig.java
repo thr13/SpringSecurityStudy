@@ -18,7 +18,10 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/anonymous").hasRole("GUEST")
+                        .requestMatchers("/anonymousContext", "/authentication").permitAll()
+                        .anyRequest().authenticated())
                 /*.formLogin(form -> form
                         .loginPage("/loginPage") // 로그인 페이지 URL
                         .loginProcessingUrl("/loginProc") // 아이디, 비밀번호 검증 (로그인 요청 시점, 인증 전) URL
@@ -37,8 +40,6 @@ public class SecurityConfig {
                         .permitAll()
                 .httpBasic(basic -> basic.authenticationEntryPoint(new CustomAuthenticationEntryPoint())
                 )
-                */
-                .formLogin(Customizer.withDefaults())
                 .rememberMe(rememberMe -> rememberMe
 //                        .alwaysRemember(true)
                         .tokenValiditySeconds(3600)
@@ -46,6 +47,11 @@ public class SecurityConfig {
                         .rememberMeParameter("remember")
                         .rememberMeCookieName("remember")
                         .key("security")
+                */
+                .formLogin(Customizer.withDefaults())
+                .anonymous(anonymous -> anonymous
+                        .principal("guest") // 사용자 정보
+                        .authorities("ROLE_GUEST") // 익명 사용자 권한
                 );
         return http.build();
     }
