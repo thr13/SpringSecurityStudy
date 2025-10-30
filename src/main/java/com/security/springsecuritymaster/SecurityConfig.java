@@ -2,6 +2,7 @@ package com.security.springsecuritymaster;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.User;
@@ -34,8 +35,17 @@ public class SecurityConfig {
                             response.sendRedirect("/login"); // 인증 실패시 이동할 URL
                         })
                         .permitAll()
-                 */
                 .httpBasic(basic -> basic.authenticationEntryPoint(new CustomAuthenticationEntryPoint())
+                )
+                */
+                .formLogin(Customizer.withDefaults())
+                .rememberMe(rememberMe -> rememberMe
+//                        .alwaysRemember(true)
+                        .tokenValiditySeconds(3600)
+                        .userDetailsService(userDetailsService())
+                        .rememberMeParameter("remember")
+                        .rememberMeCookieName("remember")
+                        .key("security")
                 );
         return http.build();
     }
