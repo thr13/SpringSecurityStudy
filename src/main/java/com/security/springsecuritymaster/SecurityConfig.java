@@ -1,15 +1,25 @@
 package com.security.springsecuritymaster;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+
+import java.io.IOException;
 
 @EnableWebSecurity
 @Configuration
@@ -18,7 +28,10 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/anonymous").hasRole("GUEST")
+                        .requestMatchers("/anonymousContext", "/authentication").permitAll()
+                        .anyRequest().authenticated())
                 /*.formLogin(form -> form
                         .loginPage("/loginPage") // 로그인 페이지 URL
                         .loginProcessingUrl("/loginProc") // 아이디, 비밀번호 검증 (로그인 요청 시점, 인증 전) URL
@@ -37,8 +50,6 @@ public class SecurityConfig {
                         .permitAll()
                 .httpBasic(basic -> basic.authenticationEntryPoint(new CustomAuthenticationEntryPoint())
                 )
-                */
-                .formLogin(Customizer.withDefaults())
                 .rememberMe(rememberMe -> rememberMe
 //                        .alwaysRemember(true)
                         .tokenValiditySeconds(3600)
@@ -46,7 +57,35 @@ public class SecurityConfig {
                         .rememberMeParameter("remember")
                         .rememberMeCookieName("remember")
                         .key("security")
+                        .anonymous(anonymous -> anonymous
+                        .principal("guest") // 사용자 정보
+                        .authorities("ROLE_GUEST") // 익명 사용자 권한
+                */
+                .formLogin(Customizer.withDefaults())
+                .logout(logout -> logout
+                        .logoutUrl("/logoutProc")
+                        .logoutSuccessUrl("/logoutSuccess")
+                        .logoutSuccessHandler(new LogoutSuccessHandler() {
+                            @Override
+                            public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+                                response.sendRedirect("/logoutSuccess");
+                            }
+                        })
+                        .deleteCookies("JSESSIONID", "remember-me") //쿠키 제거
+                        .invalidateHttpSession(true)
+                        .clearAuthentication(true)
+                        .addLogoutHandler(new LogoutHandler() {
+                            @Override
+                            public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
+                                HttpSession session = request.getSession();
+                                session.invalidate();
+                                SecurityContextHolder.getContextHolderStrategy().getContext().setAuthentication(null);
+                                SecurityContextHolder.getContextHolderStrategy().clearContext();
+                            }
+                        })
+                        .permitAll()
                 );
+
         return http.build();
     }
 
