@@ -13,17 +13,22 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class IndexController {
 
-    private final SecurityContextService securityContextService;
+//    private final SecurityContextService securityContextService;
 
-    @GetMapping("/")
+//    @GetMapping("/")
     public String index() {
         SecurityContext securityContext = SecurityContextHolder.getContextHolderStrategy().getContext();
         Authentication authentication = securityContext.getAuthentication();
         System.out.println("authentication = " + authentication);
 
-        securityContextService.securityContext();
+//        securityContextService.securityContext();
 
         return "index";
+    }
+
+    @GetMapping("/")
+    public Authentication index(Authentication authentication) {
+        return authentication;
     }
 
     @GetMapping("/home")
