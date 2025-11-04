@@ -8,12 +8,15 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.List;
 
-public class CustomAuthenticationProvider implements AuthenticationProvider {
+public class CustomAuthenticationProvider2 implements AuthenticationProvider {
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         String loginId = authentication.getName();
         String password = (String) authentication.getCredentials();
+
+        //아이디 검증
+        //비밀번호 검증
 
         return new UsernamePasswordAuthenticationToken(loginId, password, List.of(new SimpleGrantedAuthority("ROLE_USER")));
     }
